@@ -2,6 +2,8 @@
 
 **AI for Medicine — Final Project (Prof. Stefano Diciotti, University of Bologna)**
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21904829.svg)](https://doi.org/10.5281/zenodo.21904829)
+
 ## Overview
 
 This project predicts chronological **brain age** from regional cortical thickness (CT) and
@@ -58,16 +60,24 @@ LICENSE                            # MIT license for the code in this repository
 2. Quantify the site effect: a classifier predicting acquisition `SITE` from raw CT/FD
    features.
 3. Leave-One-Site-Out cross-validation (LOSO-CV) for age prediction, **before** harmonization.
-4. ComBat harmonization (`neuroHarmonize`), fit **only on training sites within each LOSO
-   fold** and applied out-of-sample to the held-out site — avoiding data leakage.
-5. Repeat LOSO-CV for age prediction **after** harmonization; compare MAE/RMSE/R².
+4. ComBat-GAM harmonization (`neuroHarmonize`, `smooth_terms=["Age"]`), fit **once, globally**
+   on the full cohort — a genuinely out-of-sample, per-fold application is not supported by
+   ComBat's own math for a site unseen during fitting (see notebook Section 8 for the concrete
+   failure this caused and the documented trade-off of the global-fit workaround used instead).
+   The non-linear (GAM) covariate term was needed: standard linear-covariate ComBat measurably
+   *hurt* prediction performance here, consistent with the known non-linear CT/FD–age
+   relationship.
+5. Repeat LOSO-CV for age prediction **after** harmonization; compare MAE/RMSE/pooled R²
+   (per-site R² is reported too, with a note on why it can be misleadingly negative for
+   narrow-age-range sites — see notebook Section 7).
 6. Repeat the site classifier after harmonization to show the reduction in site separability.
 7. Feature importance / model interpretation, brain-age gap discussion.
 
 ## Reproducibility (FAIR)
 
 - Code: this GitHub repository, MIT license.
-- Persistent identifier: Zenodo DOI (badge added once archived — see repository releases).
+- Persistent identifier: [10.5281/zenodo.21904829](https://doi.org/10.5281/zenodo.21904829)
+  (Zenodo archive of release `v1.0.0`).
 - Dependencies pinned in `requirements.txt`.
 - All randomness seeded; no GPU-induced non-determinism (no deep learning models used).
 
